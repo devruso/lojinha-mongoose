@@ -7,7 +7,7 @@ const router = Router();
 router.get("/produtos", async (req,res) =>{
     const produtos = await Produto.find();
     res.json(produtos);
-})
+});
 
 router.post("/produtos", async (req,res) =>{
 try{
@@ -24,7 +24,7 @@ try{
     res.status(500).json({message:"Um erro ocorreu"});
     
 }
-})
+});
 
 router.put("/produtos/:id", async (req,res) =>{
     const {id} = req.params;
@@ -35,5 +35,8 @@ router.put("/produtos/:id", async (req,res) =>{
     }else{
         res.status(400).json({message:"Informacoes inválidas"});
     }
-})
+});
+router.delete("/produtos/:id", async (req,res)=>{
+    console.log("Tive que botar isso aqui pra subir o codigo");
+});
 module.exports = router;
