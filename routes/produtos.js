@@ -36,7 +36,23 @@ router.put("/produtos/:id", async (req,res) =>{
         res.status(400).json({message:"Informacoes inválidas"});
     }
 });
+
 router.delete("/produtos/:id", async (req,res)=>{
-    console.log("Tive que botar isso aqui pra subir o codigo");
+    try{
+        const {id} = req.params;
+        const produtoExistente = await Produto.findByIdAndRemove(id);
+
+        const produtosRestantes = await Produto.find();
+
+        if (produtoExistente){
+            res.json({message: "Produto excluído", produtosRestantes});
+        } else {
+            res.status(404).json({message: "Produto não encontrado"});
+        }
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({message: "Um erro aconteceu."});
+    }
 });
+
 module.exports = router;
