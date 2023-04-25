@@ -1,6 +1,6 @@
 const {Router} = require("express");
 const Produto = require("../models/produto");
-
+const productSchema = require("../productSchema");
 
 const router = Router();
 
@@ -11,29 +11,38 @@ router.get("/produtos", async (req,res) =>{
 
 router.post("/produtos", async (req,res) =>{
 try{
-    const {nome, descricao, quantidade,preco, desconto, dataDesconto, categoria} = req.body;
-    const newProduto = new Produto({nome, descricao, quantidade,preco, desconto, dataDesconto, categoria});
-    await newProduto.save();
-    if(newProduto){
+    const validateSchema = await productSchema.validateAsync(req.body);
+    if(validateSchema){
+        const newProduto = new Produto({nome: validateSchema.nome, descricao: validateSchema.descricao, quantidade: validateSchema.quantidade,preco:validateSchema.preco, desconto:validateSchema.desconto, dataDesconto:validateSchema.dataDesconto, categoria:validateSchema.categoria});
+        await newProduto.save();
+        if(newProduto){
         res.status(201).json({message: "Produto adicionado"});
     }else{
         res.status(400).json({message:"Dados inválidos"})
     }
+}
 }catch(err){
     console.log(err);
     res.status(500).json({message:"Um erro ocorreu"});
-    
 }
 });
 
 router.put("/produtos/:id", async (req,res) =>{
     const {id} = req.params;
-    const {nome, descricao, quantidade,preco, desconto, dataDesconto, categoria} = req.body;
-    const attProduto = await Produto.findByIdAndUpdate(id,{nome, descricao, quantidade,preco, desconto, dataDesconto, categoria});
-    if(attProduto){
-        res.json({message:"Produto atualizado"});
-    }else{
-        res.status(400).json({message:"Informacoes inválidas"});
+    try{
+        const validateSchema = await productSchema.validateAsync(req.body);
+        if(validateSchema){
+            const attProduto = await Produto.findByIdAndUpdate(id,{nome:validateSchema.nome, descricao:validateSchema.descricao, quantidade:validateSchema.quantidade,preco:validateSchema.preco, desconto:validateSchema.desconto, dataDesconto:validateSchema.dataDesconto, categoria:validateSchema.categoria});
+            if(attProduto){
+            res.json({message:"Produto atualizado"});
+         }
+        }else{
+            res.status(400).json({message:`Informacoes inválidas: ${validateSchema.error}`});
+        }
+    }catch(err){
+            console.log(err);
+            res.status(500).json({message:`Um erro ocorreu: ${err.message}`}); 
+         
     }
 });
 

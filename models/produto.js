@@ -19,7 +19,7 @@ const Produto = model("produto", new Schema({
         required: true
     },
     desconto:{
-        type: Number,
+        type: Boolean,
         required: true
     },
     dataDesconto:{
