@@ -2,6 +2,17 @@ const {Router} = require("express");
 const Produto = require("../models/produto");
 const productSchema = require("../productSchema");
 
+const multer = require("multer");
+const storage = multer.diskStorage({
+    destination:(req,file,cb) =>{
+        cb(null,"uploads/");
+    },
+    filename:(req, file, cb)=>{
+        console.log(file);
+        cb(null,Date.now()+file.originalname);
+    }
+});
+const upload = multer({storage:storage});
 const router = Router();
 
 router.get("/produtos", async (req,res) =>{
@@ -9,7 +20,17 @@ router.get("/produtos", async (req,res) =>{
     res.json(produtos);
 });
 
-router.post("/produtos", async (req,res) =>{
+router.get("/produtos/:id", async (req, res) =>{
+    const {id} = req.params;
+    const isProduto = await Produto.findById(id);
+    if(isProduto){
+        res.json(isProduto);
+    }else{
+        res.status(404).json({message:"Produto não encontrado"});
+    }
+})
+
+router.post("/produtos",upload.single('imagemProduto') ,async (req,res) =>{
 try{
     const validateSchema = await productSchema.validateAsync(req.body);
     if(validateSchema){
@@ -42,7 +63,6 @@ router.put("/produtos/:id", async (req,res) =>{
     }catch(err){
             console.log(err);
             res.status(500).json({message:`Um erro ocorreu: ${err.message}`}); 
-         
     }
 });
 
